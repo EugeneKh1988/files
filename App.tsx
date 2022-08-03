@@ -26,8 +26,15 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+
 import Dir from './components/Dir';
 import {Provider as PaperProvider} from 'react-native-paper';
+import store from './store';
+import {Provider} from 'react-redux';
+// for dispatch action
+import {useAppDispatch} from './components/slices/hooks';
+import {setDir} from './components/slices/currentDirSlice';
+import RNFS from 'react-native-fs';
 
 const Section: React.FC<
   PropsWithChildren<{
@@ -66,6 +73,10 @@ const Content = () => {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  // set path
+  const dispatch = useAppDispatch();
+  dispatch(setDir(RNFS.DocumentDirectoryPath));
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -100,9 +111,11 @@ const Content = () => {
 
 const App = () => {
   return (
-    <PaperProvider>
-      <Content />
-    </PaperProvider>
+    <Provider store={store}>
+      <PaperProvider>
+        <Content />
+      </PaperProvider>
+    </Provider>
   );
 };
 
