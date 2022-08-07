@@ -2,26 +2,40 @@ import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Checkbox, Text} from 'react-native-paper';
 import React from 'react';
 import RNFS from 'react-native-fs';
-import Icon from 'react-native-vector-icons/FontAwesome5';
+import FileIcon from './FileIcon';
+import {useDispatch} from 'react-redux';
+import {toggleSelection, setDir} from './slices/currentDirSlice';
 
 interface IFileItem {
   fileData: RNFS.ReadDirItem;
-  onPress: () => void;
   backgroundColor: {backgroundColor: string};
   color: {color: string};
+  isSelect: (item: RNFS.ReadDirItem) => boolean;
 }
 
 const FileItem: React.FC<IFileItem> = ({
   fileData,
-  onPress,
   backgroundColor,
   color,
+  isSelect,
 }) => {
-  const [checked, setChecked] = React.useState(false);
+  //const [checked, setChecked] = React.useState(false);
+  const dispatch = useDispatch();
+  const payload = {
+    path: fileData.path,
+    isFile: fileData.isFile(),
+  };
+
+  const changeDir: () => void = () => {
+    if (fileData.isDirectory()) {
+      dispatch(setDir(fileData.path));
+    }
+  };
 
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() => changeDir()}
+      onLongPress={() => dispatch(toggleSelection(payload))}
       style={[
         backgroundColor,
         styles.container,
@@ -30,7 +44,12 @@ const FileItem: React.FC<IFileItem> = ({
       ]}>
       <View style={[styles.container]}>
         <View>
-          <Icon name={'folder'} solid size={30} />
+          {/* <Icon name={'folder'} solid size={30} /> */}
+          <FileIcon
+            fileName={fileData.name}
+            size={30}
+            isFile={fileData.isFile}
+          />
         </View>
         <View style={[styles.nameContainer]}>
           <Text style={[color]}>{fileData.name}</Text>
@@ -38,8 +57,8 @@ const FileItem: React.FC<IFileItem> = ({
       </View>
       <View style={styles.checkView}>
         <Checkbox.Android
-          status={checked ? 'checked' : 'unchecked'}
-          onPress={() => setChecked(!checked)}
+          status={isSelect(fileData) ? 'checked' : 'unchecked'}
+          onPress={() => dispatch(toggleSelection(payload))}
         />
       </View>
     </TouchableOpacity>
